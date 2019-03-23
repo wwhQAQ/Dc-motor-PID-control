@@ -1,0 +1,542 @@
+C51 COMPILER V9.59.0.0   IO                                                                03/21/2019 11:35:22 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE IO
+OBJECT MODULE PLACED IN .\Objects\IO.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE LIB\IO.c LARGE OPTIMIZE(8,SPEED) BROWSE INCDIR(.\HARDWARE;.\LIB) DEBUG O
+                    -BJECTEXTEND PRINT(.\Listings\IO.lst) TABS(2) OBJECT(.\Objects\IO.obj)
+
+line level    source
+
+   1          #include "STC15.h"
+   2          #include "IO.h"
+   3          
+   4          //Setup IO Mode
+   5          void pinMode(u8 IOGroup, u8 IONumber, u8 IOType)
+   6          {
+   7   1        u8 regVal;
+   8   1        regVal = 1<<IONumber;
+   9   1        if(IOType == INPUT_PULLUP || IOType == OUTPUT)
+  10   1        {
+  11   2          switch (IOGroup)
+  12   2          {
+  13   3            case 0:
+  14   3            {
+  15   4              P0M1 &= ~regVal;
+  16   4              P0M0 &= ~regVal;
+  17   4              P0 &= ~regVal;
+  18   4            }
+  19   3            break;
+  20   3            case 1:
+  21   3            {
+  22   4              P1M1 &= ~regVal;
+  23   4              P1M0 &= ~regVal;
+  24   4              P1 &= ~regVal;
+  25   4            }
+  26   3            break;
+  27   3            case 2:
+  28   3            {
+  29   4              P2M1 &= ~regVal;
+  30   4              P2M0 &= ~regVal;
+  31   4              P2 &= ~regVal;
+  32   4            }
+  33   3            break;
+  34   3            case 3:
+  35   3            {
+  36   4              P3M1 &= ~regVal;
+  37   4              P3M0 &= ~regVal;
+  38   4              P3 &= ~regVal;
+  39   4            }
+  40   3            break;
+  41   3            case 4:
+  42   3            {
+  43   4              P4M1 &= ~regVal;
+  44   4              P4M0 &= ~regVal;
+  45   4              P4 &= ~regVal;
+  46   4            }
+  47   3            break;
+  48   3          }
+  49   2        }
+  50   1        else if(IOType == INPUT)
+  51   1        {
+  52   2          switch (IOGroup)
+  53   2          {
+  54   3            case 0:
+C51 COMPILER V9.59.0.0   IO                                                                03/21/2019 11:35:22 PAGE 2   
+
+  55   3            {
+  56   4              P0M1 |= regVal;
+  57   4              P0M0 &= ~regVal;
+  58   4              P0 &= ~regVal;
+  59   4            }
+  60   3            break;
+  61   3            case 1:
+  62   3            {
+  63   4              P1M1 |= regVal;
+  64   4              P1M0 &= ~regVal;
+  65   4              P1 &= ~regVal;
+  66   4            }
+  67   3            break;
+  68   3            case 2:
+  69   3            {
+  70   4              P2M1 |= regVal;
+  71   4              P2M0 &= ~regVal;
+  72   4              P2 &= ~regVal;
+  73   4            }
+  74   3            break;
+  75   3            case 3:
+  76   3            {
+  77   4              P3M1 |= regVal;
+  78   4              P3M0 &= ~regVal;
+  79   4              P3 &= ~regVal;
+  80   4            }
+  81   3            break;
+  82   3            case 4:
+  83   3            {
+  84   4              P4M1 |= regVal;
+  85   4              P4M0 &= ~regVal;
+  86   4              P4 &= ~regVal;
+  87   4            }
+  88   3            break;
+  89   3          }
+  90   2        }
+  91   1        else if(IOType == OUTPUT_PP)
+  92   1        {
+  93   2          switch (IOGroup)
+  94   2          {
+  95   3            case 0:
+  96   3            {
+  97   4              P0M1 &= ~regVal;
+  98   4              P0M0 |= regVal;
+  99   4              P0 &= ~regVal;
+ 100   4            }
+ 101   3            break;
+ 102   3            case 1:
+ 103   3            {
+ 104   4              P1M1 &= ~regVal;
+ 105   4              P1M0 |= regVal;
+ 106   4              P1 &= ~regVal;
+ 107   4            }
+ 108   3            break;
+ 109   3            case 2:
+ 110   3            {
+ 111   4              P2M1 &= ~regVal;
+ 112   4              P2M0 |= regVal;
+ 113   4              P2 &= ~regVal;
+ 114   4            }
+ 115   3            break;
+ 116   3            case 3:
+C51 COMPILER V9.59.0.0   IO                                                                03/21/2019 11:35:22 PAGE 3   
+
+ 117   3            {
+ 118   4              P3M1 &= ~regVal;
+ 119   4              P3M0 |= regVal;
+ 120   4              P3 &= ~regVal;
+ 121   4            }
+ 122   3            break;
+ 123   3            case 4:
+ 124   3            {
+ 125   4              P4M1 &= ~regVal;
+ 126   4              P4M0 |= regVal;
+ 127   4              P4 &= ~regVal;
+ 128   4            }
+ 129   3            break;
+ 130   3          }
+ 131   2        }
+ 132   1      }
+ 133          
+ 134          //Setup Groups Of IO Pins Mode
+ 135          void pinModeGroup(u8 IOGroup, u8 IOType)
+ 136          {
+ 137   1        if(IOType == INPUT_PULLUP || IOType == OUTPUT)
+ 138   1        {
+ 139   2          switch (IOGroup)
+ 140   2          {
+ 141   3            case 0:
+ 142   3            {
+ 143   4              P0M1 = 0x00;
+ 144   4              P0M0 = 0x00;
+ 145   4              P0 = 0x00;
+ 146   4            }
+ 147   3            break;
+ 148   3            case 1:
+ 149   3            {
+ 150   4              P1M1 = 0x00;
+ 151   4              P1M0 = 0x00;
+ 152   4              P1 = 0x00;
+ 153   4            }
+ 154   3            break;
+ 155   3            case 2:
+ 156   3            {
+ 157   4              P2M1 = 0x00;
+ 158   4              P2M0 = 0x00;
+ 159   4              P2 = 0x00;
+ 160   4            }
+ 161   3            break;
+ 162   3            case 3:
+ 163   3            {
+ 164   4              P3M1 = 0x00;
+ 165   4              P3M0 = 0x00;
+ 166   4              P3 = 0x00;
+ 167   4            }
+ 168   3            break;
+ 169   3            case 4:
+ 170   3            {
+ 171   4              P4M1 = 0x00;
+ 172   4              P4M0 = 0x00;
+ 173   4              P4 = 0x00;
+ 174   4            }
+ 175   3            break;
+ 176   3          }
+ 177   2        }
+ 178   1        else if(IOType == INPUT)
+C51 COMPILER V9.59.0.0   IO                                                                03/21/2019 11:35:22 PAGE 4   
+
+ 179   1        {
+ 180   2          switch (IOGroup)
+ 181   2          {
+ 182   3            case 0:
+ 183   3            {
+ 184   4              P0M1 = 0xff;
+ 185   4              P0M0 = 0x00;
+ 186   4              P0 = 0x00;
+ 187   4            }
+ 188   3            break;
+ 189   3            case 1:
+ 190   3            {
+ 191   4              P1M1 = 0xff;
+ 192   4              P1M0 = 0x00;
+ 193   4              P1 = 0x00;
+ 194   4            }
+ 195   3            break;
+ 196   3            case 2:
+ 197   3            {
+ 198   4              P2M1 = 0xff;
+ 199   4              P2M0 = 0x00;
+ 200   4              P2 = 0x00;
+ 201   4            }
+ 202   3            break;
+ 203   3            case 3:
+ 204   3            {
+ 205   4              P3M1 = 0xff;
+ 206   4              P3M0 = 0x00;
+ 207   4              P3 = 0x00;
+ 208   4            }
+ 209   3            break;
+ 210   3            case 4:
+ 211   3            {
+ 212   4              P4M1 = 0xff;
+ 213   4              P4M0 = 0x00;
+ 214   4              P4 = 0x00;
+ 215   4            }
+ 216   3            break;
+ 217   3          }
+ 218   2        }
+ 219   1        else if(IOType == OUTPUT_PP)
+ 220   1        {
+ 221   2          switch (IOGroup)
+ 222   2          {
+ 223   3            case 0:
+ 224   3            {
+ 225   4              P0M1 = 0x00;
+ 226   4              P0M0 = 0xff;
+ 227   4              P0 = 0x00;
+ 228   4            }
+ 229   3            break;
+ 230   3            case 1:
+ 231   3            {
+ 232   4              P1M1 = 0x00;
+ 233   4              P1M0 = 0xff;
+ 234   4              P1 = 0x00;
+ 235   4            }
+ 236   3            break;
+ 237   3            case 2:
+ 238   3            {
+ 239   4              P2M1 = 0x00;
+ 240   4              P2M0 = 0xff;
+C51 COMPILER V9.59.0.0   IO                                                                03/21/2019 11:35:22 PAGE 5   
+
+ 241   4              P2 = 0x00;
+ 242   4            }
+ 243   3            break;
+ 244   3            case 3:
+ 245   3            {
+ 246   4              P3M1 = 0x00;
+ 247   4              P3M0 = 0xff;
+ 248   4              P3 = 0x00;
+ 249   4            }
+ 250   3            break;
+ 251   3            case 4:
+ 252   3            {
+ 253   4              P4M1 = 0x00;
+ 254   4              P4M0 = 0xff;
+ 255   4              P4 = 0x00;
+ 256   4            }
+ 257   3            break;
+ 258   3          }
+ 259   2        }
+ 260   1      }
+ 261          
+ 262          //Read A IO Pin
+ 263          u8 digitalRead(u8 IOMode, u8 IOGroup, u8 IONumber)
+ 264          {
+ 265   1        u8 regVal = 1<<IONumber;
+ 266   1        if(IOMode == INPUT_PULLUP)
+ 267   1        {
+ 268   2          switch(IOGroup)
+ 269   2          {
+ 270   3            case 0:
+ 271   3            {
+ 272   4              P0 |= regVal;
+ 273   4              return (P0>>IONumber) & 0x01;
+ 274   4            }
+ 275   3            break;
+ 276   3            case 1:
+ 277   3            {
+ 278   4              P1 |= regVal;
+ 279   4              return (P1>>IONumber) & 0x01;
+ 280   4            }
+ 281   3            break;
+ 282   3            case 2:
+ 283   3            {
+ 284   4              P2 |= regVal;
+ 285   4              return (P2>>IONumber) & 0x01;
+ 286   4            }
+ 287   3            break;
+ 288   3            case 3:
+ 289   3            {
+ 290   4              P3 |= regVal;
+ 291   4              return (P3>>IONumber) & 0x01;
+ 292   4            }
+ 293   3            break;
+ 294   3            case 4:
+ 295   3            {
+ 296   4              P4 |= regVal;
+ 297   4              return (P4>>IONumber) & 0x01;
+ 298   4            }
+ 299   3            break;
+ 300   3          }
+ 301   2        }
+ 302   1        else if(IOMode == INPUT)
+C51 COMPILER V9.59.0.0   IO                                                                03/21/2019 11:35:22 PAGE 6   
+
+ 303   1        {
+ 304   2          switch(IOGroup)
+ 305   2          {
+ 306   3            case 0:
+ 307   3              return (P0>>IONumber) & 0x01;
+ 308   3              break;
+ 309   3            case 1:
+ 310   3              return (P1>>IONumber) & 0x01;
+ 311   3              break;
+ 312   3            case 2:
+ 313   3              return (P2>>IONumber) & 0x01;
+ 314   3              break;
+ 315   3            case 3:
+ 316   3              return (P3>>IONumber) & 0x01;
+ 317   3              break;
+ 318   3            case 4:
+ 319   3              return (P4>>IONumber) & 0x01;
+ 320   3              break;
+ 321   3          }
+ 322   2        }
+ 323   1        return 0x00;
+ 324   1      }
+ 325          
+ 326          //Read A Group Of IO Pins
+ 327          u8 digitalReadGroup(u8 IOMode, u8 IOGroup)
+ 328          {
+ 329   1        if(IOMode == INPUT_PULLUP)
+ 330   1        {
+ 331   2          switch(IOGroup)
+ 332   2          {
+ 333   3            case 0:
+ 334   3            {
+ 335   4              P0 = 0xff;
+ 336   4              return P0;
+ 337   4            }
+ 338   3            break;
+ 339   3            case 1:
+ 340   3            {
+ 341   4              P1 = 0xff;
+ 342   4              return P1;
+ 343   4            }
+ 344   3            break;
+ 345   3            case 2:
+ 346   3            {
+ 347   4              P2 = 0xff;
+ 348   4              return P2;
+ 349   4            }
+ 350   3            break;
+ 351   3            case 3:
+ 352   3            {
+ 353   4              P3 = 0xff;
+ 354   4              return P3;
+ 355   4            }
+ 356   3            break;
+ 357   3            case 4:
+ 358   3            {
+ 359   4              P4 = 0xff;
+ 360   4              return P4;
+ 361   4            }
+ 362   3            break;
+ 363   3          }
+ 364   2        }
+C51 COMPILER V9.59.0.0   IO                                                                03/21/2019 11:35:22 PAGE 7   
+
+ 365   1        else if(IOMode == INPUT)
+ 366   1        {
+ 367   2          switch(IOGroup)
+ 368   2          {
+ 369   3            case 0:
+ 370   3              return P0;
+ 371   3              break;
+ 372   3            case 1:
+ 373   3              return P1;
+ 374   3              break;
+ 375   3            case 2:
+ 376   3              return P2;
+ 377   3              break;
+ 378   3            case 3:
+ 379   3              return P3;
+ 380   3              break;
+ 381   3            case 4:
+ 382   3              return P4;
+ 383   3              break;
+ 384   3          }
+ 385   2        }
+ 386   1        return 0x00;
+ 387   1      }
+ 388          
+ 389          //Write to A IO Pin
+ 390          void digitalWrite(u8 IOMode, u8 IOGroup, u8 IONumber, u8 content)
+ 391          {
+ 392   1        u8 regVal;
+ 393   1        if(IOMode != OUTPUT && IOMode != OUTPUT_PP)return;
+ 394   1        regVal = 1<<IONumber;
+ 395   1        if(content)
+ 396   1        {
+ 397   2          switch(IOGroup)
+ 398   2          {
+ 399   3            case 0:
+ 400   3              P0 |= regVal;
+ 401   3              break;
+ 402   3            case 1:
+ 403   3              P1 |= regVal;
+ 404   3              break;
+ 405   3            case 2:
+ 406   3              P2 |= regVal;
+ 407   3              break;
+ 408   3            case 3:
+ 409   3              P3 |= regVal;
+ 410   3              break;
+ 411   3            case 4:
+ 412   3              P4 |= regVal;
+ 413   3              break;
+ 414   3          }
+ 415   2        }
+ 416   1        else
+ 417   1        {
+ 418   2          switch(IOGroup)
+ 419   2          {
+ 420   3            case 0:
+ 421   3              P0 &= ~regVal;
+ 422   3              break;
+ 423   3            case 1:
+ 424   3              P1 &= ~regVal;
+ 425   3              break;
+ 426   3            case 2:
+C51 COMPILER V9.59.0.0   IO                                                                03/21/2019 11:35:22 PAGE 8   
+
+ 427   3              P2 &= ~regVal;
+ 428   3              break;
+ 429   3            case 3:
+ 430   3              P3 &= ~regVal;
+ 431   3              break;
+ 432   3            case 4:
+ 433   3              P4 &= ~regVal;
+ 434   3              break;
+ 435   3          }
+ 436   2        }
+ 437   1      }
+ 438          
+ 439          //Write to A Groupp of IO Pins
+ 440          void digitalWriteGroup(u8 IOMode, u8 IOGroup, u8 content)
+ 441          {
+ 442   1        if(IOMode != OUTPUT && IOMode != OUTPUT_PP)return;
+ 443   1        if(content)
+ 444   1        {
+ 445   2          switch(IOGroup)
+ 446   2          {
+ 447   3            case 0:
+ 448   3              P0 = 0xff;
+ 449   3              break;
+ 450   3            case 1:
+ 451   3              P1 = 0xff;
+ 452   3              break;
+ 453   3            case 2:
+ 454   3              P2 = 0xff;
+ 455   3              break;
+ 456   3            case 3:
+ 457   3              P3 = 0xff;
+ 458   3              break;
+ 459   3            case 4:
+ 460   3              P4 = 0xff;
+ 461   3              break;
+ 462   3          }
+ 463   2        }
+ 464   1        else
+ 465   1        {
+ 466   2          switch(IOGroup)
+ 467   2          {
+ 468   3            case 0:
+ 469   3              P0 = 0x00;
+ 470   3              break;
+ 471   3            case 1:
+ 472   3              P1 = 0x00;
+ 473   3              break;
+ 474   3            case 2:
+ 475   3              P2 = 0x00;
+ 476   3              break;
+ 477   3            case 3:
+ 478   3              P3 = 0x00;
+ 479   3              break;
+ 480   3            case 4:
+ 481   3              P4 = 0x00;
+ 482   3              break;
+ 483   3          }
+ 484   2        }
+ 485   1      }
+ 486          
+ 487          void IO_INIT(void)
+ 488          {
+C51 COMPILER V9.59.0.0   IO                                                                03/21/2019 11:35:22 PAGE 9   
+
+ 489   1      //   EA=0;//打开总中断
+ 490   1      //   EX0=1;//打开外部中断0
+ 491   1      //   IT0=0;//外部中断0上升沿和下降沿触发
+ 492   1      //   INT_CLKO |= 0x10;  
+ 493   1      //   EA=1;
+ 494   1         pinMode(3,2,INPUT);  //D 
+ 495   1         pinMode(2,0,INPUT);  
+ 496   1         pinMode(2,6,INPUT);  //A
+ 497   1         pinMode(3,6,INPUT);  
+ 498   1         pinMode(2,5,INPUT);  //B
+ 499   1         pinMode(1,6,INPUT);
+ 500   1         pinMode(2,4,INPUT);  //C
+ 501   1         pinMode(3,7,INPUT);
+ 502   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    971    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----       4
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

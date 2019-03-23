@@ -1,0 +1,12 @@
+".\Objects\IO.obj",
+".\Objects\PWM.obj",
+".\Objects\USART.obj",
+".\Objects\STDFUNC.obj",
+".\Objects\SERVO.obj",
+".\Objects\MOTOR.obj",
+".\Objects\PID.obj",
+".\Objects\SENSOR.obj",
+".\Objects\main_course.obj" 
+TO ".\Objects\dcm-module" 
+PRINT(".\Listings\dcm-module.m51") RAMSIZE(256) 
+DISABLEWARNING (16) 

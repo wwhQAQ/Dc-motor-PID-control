@@ -1,0 +1,296 @@
+C51 COMPILER V9.59.0.0   PID                                                               03/21/2019 11:35:23 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE PID
+OBJECT MODULE PLACED IN .\Objects\PID.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE HARDWARE\PID.c LARGE OPTIMIZE(8,SPEED) BROWSE INCDIR(.\HARDWARE;.\LIB) D
+                    -EBUG OBJECTEXTEND PRINT(.\Listings\PID.lst) TABS(2) OBJECT(.\Objects\PID.obj)
+
+line level    source
+
+   1          #include "STC15.h"
+   2          #include "IO.h"
+   3          #include "MOTOR.h"
+   4          #include "SERVO.h"
+   5          #include "SENSOR.h"
+   6          #include "PID.h"
+   7          #include "USART.h"
+   8          //PID Paras
+   9          float Kp;
+  10          float Ki;
+  11          float Kd;
+  12          extern  int RANGE[4];
+  13          //Data for Apply
+  14          //u8 PIDservoAngle = 3600;
+  15          void PID_Setup(float PID_KP, float PID_KI, float PID_KD)
+  16          {
+  17   1         Kp=PID_KP;
+  18   1         Ki=PID_KI; 
+  19   1         Kd=PID_KD; 
+  20   1      }
+  21          
+  22          int Incremental_PI (int Encoder,int Target) 
+  23          {   
+  24   1         float Kp=0.5,Ki=0.85;      //10  6.4-6.0     Kp=0.5,Ki=0.5; 0.85  Kp=0.8,Ki=0.8;  
+  25   1         static float Bias1=0,Last_bias1=0;
+  26   1         static int Pwm1=0;
+  27   1         Bias1=Encoder-Target; 
+  28   1         Pwm1+=Kp*(Bias1-Last_bias1)+Ki*Bias1; 
+  29   1      //   if(Bias1>100000) Bias1=100000; //===积分限幅
+  30   1      //   if(Bias1<-100000) Bias1=-100000; //===积分限幅 
+  31   1      
+  32   1         Last_bias1=Bias1;                                  
+  33   1         return Pwm1;   
+  34   1      }
+  35          
+  36          int Position_PID (int Encoder,int Target) //模板 
+  37          {   
+  38   1        
+  39   1        // float Kp=15,Ki=0.01;      //10  6.4-6.0   50 0.01 Kp=0.48,Ki=0.408,Kd=0; 
+  40   1         float Kp=5,Ki=0,Kd=5;     //0.0002   Kp=30,Ki=0.002; Kd=0.175ki↑ kd？ kp↓0.0075  22 Kp=13.2,Ki=0.5,Kd=
+             -0 0.001  5
+  41   1         int pwm=0,Pwm2=0;  //2 //6 2  
+  42   1         static  long  Integral_bias=0,Last_Bias=0,Bias=0;      
+  43   1         Bias=Encoder-Target;               
+  44   1         if(Integral_bias>100) Integral_bias=100; //===积分限幅
+  45   1         if(Integral_bias<-100) Integral_bias=-100; //===积分限幅     
+  46   1         Integral_bias+=Bias;             
+  47   1         pwm=Kp*Bias+Ki*Integral_bias+Kd*(Bias-Last_Bias);
+  48   1         Last_Bias=Bias;      
+  49   1          Pwm2=(int)pwm;
+  50   1              if(pwm>0)     
+  51   1            {
+  52   2              if(pwm-Pwm2>=0.5)
+  53   2              {
+C51 COMPILER V9.59.0.0   PID                                                               03/21/2019 11:35:23 PAGE 2   
+
+  54   3                Pwm2=Pwm2+1;
+  55   3              }
+  56   2            }
+  57   1            if(pwm<0)
+  58   1            {
+  59   2              if(Pwm2-pwm>=0.5)
+  60   2              {
+  61   3                Pwm2=Pwm2-1;
+  62   3              }
+  63   2            }
+  64   1        
+  65   1        if(Bias==1||Bias==-1)
+  66   1         return 0;  
+  67   1        else
+  68   1         return Pwm2;           
+  69   1      }
+  70          
+  71          
+  72          int Position_PID_COM1 (int Encoder,int Target)
+  73          {     
+  74   1         int pwm=0,Pwm2=0; 
+  75   1         static  long  Integral_bias=0,Last_Bias=0,Bias=0,TargetOLD;      
+  76   1         if(TargetOLD!=Target)  {Integral_bias=0;Last_Bias=0;Bias=0;}
+  77   1         Bias=Encoder-Target;   
+  78   1         if(Integral_bias>100) Integral_bias=100; 
+  79   1         if(Integral_bias<-100) Integral_bias=-100;   
+  80   1         Integral_bias+=Bias;             
+  81   1         pwm=Kp*Bias+Ki*Integral_bias+Kd*(Bias-Last_Bias);
+  82   1         Last_Bias=Bias;      
+  83   1          Pwm2=(int)pwm;
+  84   1              if(pwm>0)     
+  85   1            {
+  86   2              if(pwm-Pwm2>=0.5)
+  87   2              {
+  88   3                Pwm2=Pwm2+1;
+  89   3              }
+  90   2            }
+  91   1            if(pwm<0)
+  92   1            {
+  93   2              if(Pwm2-pwm>=0.5)
+  94   2              {
+  95   3                Pwm2=Pwm2-1;
+  96   3              }
+  97   2            }
+  98   1          TargetOLD=Target;
+  99   1        if(Bias==1||Bias==-1)
+ 100   1         return 0;  
+ 101   1        else
+ 102   1         return Pwm2;           
+ 103   1      }
+ 104          
+ 105          int Position_PID_COM2 (int Encoder,int Target)
+ 106          {    
+ 107   1         int pwm=0,Pwm2=0; 
+ 108   1         static  long  Integral_bias=0,Last_Bias=0,Bias=0,TargetOLD;
+ 109   1         if(TargetOLD!=Target)  {Integral_bias=0;Last_Bias=0;Bias=0;} 
+ 110   1         Bias=Encoder-Target;               
+ 111   1         if(Integral_bias>100) Integral_bias=100;
+ 112   1         if(Integral_bias<-100) Integral_bias=-100;    
+ 113   1         Integral_bias+=Bias;             
+ 114   1         pwm=Kp*Bias+Ki*Integral_bias+Kd*(Bias-Last_Bias);
+ 115   1         Last_Bias=Bias;      
+C51 COMPILER V9.59.0.0   PID                                                               03/21/2019 11:35:23 PAGE 3   
+
+ 116   1          Pwm2=(int)pwm;
+ 117   1              if(pwm>0)     
+ 118   1            {
+ 119   2              if(pwm-Pwm2>=0.5)
+ 120   2              {
+ 121   3                Pwm2=Pwm2+1;
+ 122   3              }
+ 123   2            }
+ 124   1            if(pwm<0)
+ 125   1            {
+ 126   2              if(Pwm2-pwm>=0.5)
+ 127   2              {
+ 128   3                Pwm2=Pwm2-1;
+ 129   3              }
+ 130   2            }
+ 131   1        TargetOLD=Target;
+ 132   1        if(Bias==1||Bias==-1)
+ 133   1         return 0;  
+ 134   1        else
+ 135   1         return Pwm2;           
+ 136   1      }
+ 137          
+ 138          
+ 139          int Position_PID_COM3 (int Encoder,int Target)
+ 140          {   
+ 141   1         int pwm=0,Pwm2=0;
+ 142   1         static  long  Integral_bias=0,Last_Bias=0,Bias=0,TargetOLD;
+ 143   1         if(TargetOLD!=Target)  {Integral_bias=0;Last_Bias=0;Bias=0;}   
+ 144   1         Bias=Encoder-Target;               
+ 145   1         if(Integral_bias>100) Integral_bias=100; 
+ 146   1         if(Integral_bias<-100) Integral_bias=-100; 
+ 147   1         Integral_bias+=Bias;             
+ 148   1         pwm=Kp*Bias+Ki*Integral_bias+Kd*(Bias-Last_Bias);
+ 149   1         Last_Bias=Bias;      
+ 150   1          Pwm2=(int)pwm;
+ 151   1              if(pwm>0)     
+ 152   1            {
+ 153   2              if(pwm-Pwm2>=0.5)
+ 154   2              {
+ 155   3                Pwm2=Pwm2+1;
+ 156   3              }
+ 157   2            }
+ 158   1            if(pwm<0)
+ 159   1            {
+ 160   2              if(Pwm2-pwm>=0.5)
+ 161   2              {
+ 162   3                Pwm2=Pwm2-1;
+ 163   3              }
+ 164   2            }
+ 165   1        TargetOLD=Target;
+ 166   1        if(Bias==1||Bias==-1)
+ 167   1         return 0;  
+ 168   1        else
+ 169   1         return Pwm2;           
+ 170   1      }
+ 171          
+ 172          int Position_PID_COM4 (int Encoder,int Target)
+ 173          {   
+ 174   1      
+ 175   1         int pwm=0,Pwm2=0; 
+ 176   1         static  long  Integral_bias=0,Last_Bias=0,Bias=0,TargetOLD;
+ 177   1        if(TargetOLD!=Target) {Integral_bias=0;Last_Bias=0;Bias=0;}   
+C51 COMPILER V9.59.0.0   PID                                                               03/21/2019 11:35:23 PAGE 4   
+
+ 178   1         Bias=Encoder-Target;               
+ 179   1         if(Integral_bias>100) Integral_bias=100; 
+ 180   1         if(Integral_bias<-100) Integral_bias=-100;   
+ 181   1         Integral_bias+=Bias;             
+ 182   1         pwm=Kp*Bias+Ki*Integral_bias+Kd*(Bias-Last_Bias);
+ 183   1         Last_Bias=Bias;      
+ 184   1          Pwm2=(int)pwm;
+ 185   1              if(pwm>0)     
+ 186   1            {
+ 187   2              if(pwm-Pwm2>=0.5)
+ 188   2              {
+ 189   3                Pwm2=Pwm2+1;
+ 190   3              }
+ 191   2            }
+ 192   1            if(pwm<0)
+ 193   1            {
+ 194   2              if(Pwm2-pwm>=0.5)
+ 195   2              {
+ 196   3                Pwm2=Pwm2-1;
+ 197   3              }
+ 198   2            }
+ 199   1            if(Bias)
+ 200   1        TargetOLD=Target;
+ 201   1        if(Bias==1||Bias==-1)
+ 202   1         return 0;  
+ 203   1        else
+ 204   1         return Pwm2;           
+ 205   1      }
+ 206          
+ 207          
+ 208          int Xianfu_Pwm(int pwm_xf)
+ 209          { 
+ 210   1          
+ 211   1          int  Amplitude=100;
+ 212   1          if (pwm_xf>Amplitude) pwm_xf = Amplitude;
+ 213   1          if (pwm_xf< -Amplitude) pwm_xf = -Amplitude;
+ 214   1          return  pwm_xf;
+ 215   1      }
+ 216          
+ 217          //void speed(int user_input_speed)
+ 218          //{
+ 219          ////#ifdef PROGRAMMER1
+ 220          ////  int sudu;
+ 221          ////    //  Serial1_SendByte(runpuls);       //runpuls
+ 222          ////      sudu=Incremental_PI(runpuls,user_input_speed);
+ 223          ////      Xianfu_Pwm(sudu);
+ 224          ////      Motor_fo(sudu); //90-0 
+ 225          ////    
+ 226          ////#else
+ 227          //  
+ 228          //     Motor_fo(user_input_speed);
+ 229          //    
+ 230          ////#endif  
+ 231          //}
+ 232          
+ 233          int angle(int input,char COM)
+ 234            
+ 235          {
+ 236   1          int SPEED_OUT;
+ 237   1          switch(COM)
+ 238   1          {
+ 239   2            case 0:
+C51 COMPILER V9.59.0.0   PID                                                               03/21/2019 11:35:23 PAGE 5   
+
+ 240   2            {
+ 241   3            SPEED_OUT=Position_PID_COM1(RANGE[0],input);
+ 242   3            }
+ 243   2              break;
+ 244   2            case 1:
+ 245   2            {
+ 246   3            SPEED_OUT=Position_PID_COM2(RANGE[1],input);
+ 247   3            }
+ 248   2              break;      
+ 249   2            case 2:
+ 250   2            {
+ 251   3            SPEED_OUT=Position_PID_COM3(RANGE[2],input);      
+ 252   3            }
+ 253   2              break;
+ 254   2            case 3:
+ 255   2            {
+ 256   3            SPEED_OUT=Position_PID_COM4(RANGE[3],input); 
+ 257   3            }
+ 258   2              break;
+ 259   2          }
+ 260   1          Xianfu_Pwm(SPEED_OUT);
+ 261   1         // Motor_fo(-SPEED_OUT);//-wtf??
+ 262   1          return -SPEED_OUT;
+ 263   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   3620    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =     98      76
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,140 @@
+C51 COMPILER V9.59.0.0   USART                                                             03/21/2019 11:35:22 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE USART
+OBJECT MODULE PLACED IN .\Objects\USART.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE LIB\USART.c LARGE OPTIMIZE(8,SPEED) BROWSE INCDIR(.\HARDWARE;.\LIB) DEBU
+                    -G OBJECTEXTEND PRINT(.\Listings\USART.lst) TABS(2) OBJECT(.\Objects\USART.obj)
+
+line level    source
+
+   1          #include "STC15.h"
+   2          #include "IO.h"
+   3          #include "STDFUNC.h"
+   4          #include "USART.h"
+   5          u8 readBuffer[READ_BUFFER_LENGTH];
+   6          u8 readBufferLength;
+   7          u8 readBufferHead;
+   8          u8 readBufferTail;
+   9          unsigned char idata SendBuf[6];
+  10          //Begin the Serial1
+  11          int flag1=2,aaa=0;
+  12          void Serial1_Begin(unsigned long BAUD)
+  13          {
+  14   1        //Setup IO Mode
+  15   1        //pinMode(3, 0, INPUT_PULLUP);
+  16   1        //pinMode(3, 1, OUTPUT);
+  17   1        //Setup USART Registers
+  18   1      //  ES = 0;
+  19   1      //  TR1 = 0;
+  20   1        SCON = 0x50;
+  21   1      //  AUXR |= 0x40;
+  22   1      //  AUXR &= 0xFE;
+  23   1      //  TMOD &= 0x0F;
+  24   1        AUXR |= 0x01;   //??1?????2???????
+  25   1        AUXR |= 0x04;   //???2???Fosc,?1T
+  26   1        T2H = (u8)((65536UL - (MAIN_FOSC / 4 / BAUD))>>8);
+  27   1        T2L = (u8)(65536UL - (MAIN_FOSC / 4 / BAUD));
+  28   1        //TR1 = 1;
+  29   1      //  PS = 1;
+  30   1        AUXR |= 0x10;   //?????2
+  31   1      //  ET1 = 0;    //?????1??
+  32   1        ES = 1;
+  33   1        EA = 1;
+  34   1        //Clear Buffer
+  35   1        readBufferLength = 0;
+  36   1        readBufferHead = 0;
+  37   1        readBufferTail = 0;
+  38   1      }
+  39          //Send One Char via Serial1
+  40          void Serial1_SendByte(u8 s)
+  41          {
+  42   1      
+  43   1        SBUF = s;
+  44   1        while(!TI);
+  45   1        TI = 0;
+  46   1      }
+  47          
+  48          
+  49          //Send One String via Serial1
+  50          void Serial1_SendStr(u8 *s)
+  51          {
+  52   1        while(*s)
+  53   1        {
+  54   2          Serial1_SendByte(*s++);
+C51 COMPILER V9.59.0.0   USART                                                             03/21/2019 11:35:22 PAGE 2   
+
+  55   2        }
+  56   1      }
+  57          
+  58          //Send Fixed Length String via Serial1
+  59          void Serial1_SendLenStr(u8 *s, int length)
+  60          {
+  61   1        while(length && *s)
+  62   1        {
+  63   2          Serial1_SendByte(*s++);
+  64   2          length--;
+  65   2        }
+  66   1      }
+  67          
+  68          //Serial ISP
+  69          void Serial1_ISP() interrupt 4 
+  70          {
+  71   1        //ES = 0;
+  72   1        if(RI)
+  73   1        {
+  74   2          RI = 0;
+  75   2          if(readBufferLength > READ_BUFFER_LENGTH)
+  76   2          {
+  77   3            readBufferHead = (readBufferHead + 1) % READ_BUFFER_LENGTH;
+  78   3            readBufferLength =  READ_BUFFER_LENGTH;
+  79   3          }
+  80   2          readBufferLength++;
+  81   2          readBuffer[readBufferTail] = SBUF;
+  82   2          readBufferTail = (readBufferTail + 1) % READ_BUFFER_LENGTH;
+  83   2           if(SBUF=='1') {flag1=1;aaa++;}
+  84   2      
+  85   2           if(SBUF=='0')flag1=0;
+  86   2      
+  87   2        }
+  88   1      //  ES = 1;
+  89   1      }
+  90          
+  91          //Is Serial1 Has Data To Read 
+  92          u8 Serial1_Available()
+  93          {
+  94   1        return readBufferLength > 0;
+  95   1      }
+  96          
+  97          //Read Data in Serial1 Buffer Area
+  98          u8 Serial1_ReadByte()
+  99          {
+ 100   1        u8 retValue = 0;
+ 101   1        if(Serial1_Available())
+ 102   1        {
+ 103   2          retValue = readBuffer[readBufferHead];
+ 104   2          readBufferHead = (readBufferHead + 1) % READ_BUFFER_LENGTH;
+ 105   2          readBufferLength--;
+ 106   2        }
+ 107   1        return retValue;
+ 108   1      }
+ 109          
+ 110          
+ 111          
+ 112          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    398    ----
+C51 COMPILER V9.59.0.0   USART                                                             03/21/2019 11:35:22 PAGE 3   
+
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =     71      10
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =      6    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

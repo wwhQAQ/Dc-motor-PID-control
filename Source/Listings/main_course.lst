@@ -1,0 +1,163 @@
+C51 COMPILER V9.59.0.0   MAIN_COURSE                                                       03/21/2019 11:35:23 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE MAIN_COURSE
+OBJECT MODULE PLACED IN .\Objects\main_course.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE USER\main_course.c LARGE OPTIMIZE(8,SPEED) BROWSE INCDIR(.\HARDWARE;.\LI
+                    -B) DEBUG OBJECTEXTEND PRINT(.\Listings\main_course.lst) TABS(2) OBJECT(.\Objects\main_course.obj)
+
+line level    source
+
+   1          #include "STC15.h"
+   2          #include "IO.h"
+   3          #include "PWM.h"
+   4          #include "STDFUNC.h"
+   5          #include "USART.h"
+   6          #include "PID.h"
+   7          #include "MOTOR.h"
+   8          #include "SERVO.h"
+   9          #include "SENSOR.h"
+  10          extern int RANGE[4];
+  11          int user_input_angel =0;
+  12          int user_input_speed =0,spppp=0;
+  13          int last_in_angel[4]={0,0,0,0},STATE[4];
+  14          extern int flag1,aaa,FINISH;
+  15          extern int puls_count1;
+  16          extern bit T_3,T_0,T_1,T_2;
+  17          //2ms@30.0000Mhz
+  18          //void Timer2Init(void)
+  19          //{
+  20          //  AUXR |= 0x04;   
+  21          //  T2L = 0xA0;   
+  22          //  T2H = 0x15;   
+  23          //  AUXR |= 0x10; 
+  24          //  EA = 1;
+  25          //}
+  26          //30um@30.0000Mhz
+  27          void Timer1Init(void)   
+  28          {
+  29   1        AUXR |= 0x40;   
+  30   1        TMOD &= 0x0F;   
+  31   1        TL1 = 0xD0;   
+  32   1        TH1 = 0x8A;   
+  33   1        TF1 = 0;  
+  34   1        TR1 = 1;  
+  35   1        ET1=1;
+  36   1        EA=1;
+  37   1      }
+  38          
+  39          void Motor_cal(int in_angel,int in_speed,char COM) 
+  40          {
+  41   1         int ADJUST=2;  //wtf
+  42   1         if(last_in_angel[COM]!=in_angel)STATE[COM]=2;
+  43   1         if(in_angel>0)
+  44   1           {
+  45   2           if(RANGE[COM]<=in_angel-ADJUST&&STATE[COM]==2)
+  46   2           {
+  47   3      
+  48   3            spppp=in_speed;
+  49   3            FINISH=1;
+  50   3            
+  51   3           }
+  52   2           else  
+  53   2           { 
+  54   3            STATE[COM]=1;
+C51 COMPILER V9.59.0.0   MAIN_COURSE                                                       03/21/2019 11:35:23 PAGE 2   
+
+  55   3            spppp=angle(in_angel,COM);
+  56   3            FINISH=0;
+  57   3        
+  58   3           }
+  59   2         }
+  60   1       else if(in_angel<0)
+  61   1         {
+  62   2           if(RANGE[COM]>=in_angel+ADJUST&&STATE[COM]==2)
+  63   2           {
+  64   3           spppp=(-in_speed);
+  65   3           FINISH=1;       
+  66   3           }
+  67   2           else
+  68   2           {     
+  69   3           STATE[COM]=1;
+  70   3           spppp=angle(in_angel,COM);
+  71   3           FINISH=0;       
+  72   3           }
+  73   2         } 
+  74   1      
+  75   1      //---------------------------------// 
+  76   1          switch(COM)
+  77   1          {
+  78   2            case 0:
+  79   2            Motor_f(spppp);
+  80   2            break;
+  81   2            case 1:
+  82   2            Motor_s(spppp);
+  83   2            break;
+  84   2            case 2:
+  85   2            Motor_t(spppp);
+  86   2            break;
+  87   2            case 3:
+  88   2            Motor_fo(spppp);
+  89   2            break;
+  90   2          }
+  91   1          last_in_angel[COM]=in_angel;
+  92   1      }
+  93          
+  94          // Main Control
+  95          void main()
+  96          {
+  97   1        T_3=P32;
+  98   1        T_0=P36;
+  99   1        T_1=P33;
+ 100   1        T_2=P37;
+ 101   1      //Init Devices 
+ 102   1        Timer0Init();
+ 103   1      //Timer1Init();
+ 104   1      //Timer3Init();
+ 105   1        Motor_Init(); 
+ 106   1        IO_INIT();  //exit
+ 107   1      //PWM_Init();
+ 108   1        Serial1_Begin(9600);
+ 109   1        PID_Setup(3.5,0.08,5);//10 3  6 4
+ 110   1        delay_ms(500);
+ 111   1        Serial1_SendStr("Hello");
+ 112   1        while(1)
+ 113   1        {   
+ 114   2        
+ 115   2        if(flag1==1)
+ 116   2        {
+C51 COMPILER V9.59.0.0   MAIN_COURSE                                                       03/21/2019 11:35:23 PAGE 3   
+
+ 117   3          Motor_cal(180,100,0);
+ 118   3          Motor_cal(180,100,1);
+ 119   3          Motor_cal(180,100,2);
+ 120   3          Motor_cal(180,100,3);
+ 121   3        }
+ 122   2        if(flag1==0)
+ 123   2        {
+ 124   3          Motor_cal(-180,50,0);
+ 125   3          Motor_cal(-180,50,1);
+ 126   3          Motor_cal(-180,50,2);
+ 127   3          Motor_cal(-180,50,3);
+ 128   3        }   
+ 129   2        
+ 130   2        //Serial1_SendByte(RANGE[0]);
+ 131   2        //Serial1_SendByte(start_flag);
+ 132   2        //Serial1_SendByte(puls_count1);
+ 133   2        }
+ 134   1      }
+ 135           
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    761    ----
+   CONSTANT SIZE    =      6    ----
+   XDATA SIZE       =     22       7
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
